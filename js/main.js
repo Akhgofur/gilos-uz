@@ -2,7 +2,6 @@ const selectElement = (element, parentElement = document) => parentElement.query
 const createDOM = (element) => document.createElement(element)
 const elProductList = selectElement(".product-list")
 const elProductTemplate = selectElement(".product-template").content
-let elProductsCount = selectElement(".count").textContent = "count: " + products.length
 let elProductName = selectElement("#product-title")
 let elProductPrice = selectElement("#price")
 let elProductManufacture = selectElement("#product-manufacturer")
@@ -14,6 +13,12 @@ let elPriceFrom = selectElement("#from")
 let elPriceTo = selectElement("#to")
 let elSortBy = selectElement("#sortby")
 let elFilterForm = selectElement("#search-form")
+const editProductModal = selectElement("#edit-product-modal")
+const elEditFormTilte = selectElement("#edit-product-title")
+const elEditFormPrice = selectElement("#edit-price")
+const elEditFormManufacture = selectElement("#edit-product-manufacturer")
+const elEditFormBenefits = selectElement("#edit-benefits")
+const elEditForm = selectElement("#edit-form")
 
 const getTime = (time) => {
     const date = new Date(time)
@@ -34,6 +39,7 @@ const manufacturesRender = (manufacturesArr, optionList) => {
 }
 
 manufacturesRender(manufacturers, elProductManufacture)
+manufacturesRender(manufacturers, elEditFormManufacture)
 manufacturesRender(manufacturers, elManufacturesFilter)
 
 function addProduct(evt){
@@ -54,7 +60,6 @@ function addProduct(evt){
 }
 elAddProductForm.addEventListener("submit", addProduct)
 
-
 function productRender(productsArr, element) {
     element.innerHTML = null
 
@@ -62,6 +67,7 @@ function productRender(productsArr, element) {
         const productTemplate = elProductTemplate.cloneNode(true)
 
         selectElement(".card-img-top", productTemplate).src = product.img
+        selectElement("#one-product", productTemplate).setAttribute("data-id", product.id)
         selectElement(".card-title", productTemplate).textContent = product.title
         selectElement(".card-discount-price", productTemplate).textContent = product.price - (product.price/100*20)
         selectElement(".card-price", productTemplate).textContent = product.price
@@ -78,20 +84,63 @@ function productRender(productsArr, element) {
         })
 
         element.append(productTemplate)
+        let elProductsCount = selectElement(".count").textContent = "count: " + products.length
     });
-    
 }
 function searchProduct(evt) {
     evt.preventDefault
     if(elSortBy.value === "1"){
         let regex = new RegExp(elProductSearch.value, 'gi')
-        const searchedArr = products.filter(item => item.title.match(regex) || item.model === elManufacturesFilter.value)
-        productRender(searchedArr, elProductList)
+        if (elManufacturesFilter.value === "0") {
+            const searchedArr = products.filter(item => item.title.match(regex))
+            productRender(searchedArr, elProductList)
+        }else{
+            const searchedArr = products.filter(item => item.title.match(regex) && item.model === elManufacturesFilter.value)
+            productRender(searchedArr, elProductList)
+        }
     }
     if(elSortBy.value === "2"){
         const filteredByPrice = products.filter(item => elPriceFrom < item.price > elPriceTo || item.model === elManufacturesFilter.value)
         productRender(filteredByPrice, elProductList)
     }
+}
+const onListClick = (event) => {
+    if(event.target.matches(".delete")){
+        const currentCardId = event.target.closest("#one-product").dataset.id
+        const currentProduct = products.findIndex(product => product.id === +currentCardId)
+        products.splice(currentProduct, 1)
+        productRender(products, elProductList)
+    }else if(event.target.matches(".edit")){
+        const currentCardId = event.target.closest("#one-product").dataset.id
+        const currentProductIndex = products.findIndex(product => product.id === +currentCardId)
+
+        elEditFormTilte.value = products[currentProductIndex].title
+        elEditFormPrice.value = products[currentProductIndex].price
+        elEditFormManufacture.value = products[currentProductIndex].model
+        elEditFormBenefits.value = products[currentProductIndex].benefits
+
+        const editProduct = (evt) => {
+            evt.preventDefault()
+            if(elEditFormTilte.value.trim() && elEditFormManufacture.value !== '' && elEditFormPrice.value >= 0) {
+                let product = {
+                    id: products[currentProductIndex].id,
+                    img: products[currentProductIndex].img,
+                    addedDate: products[currentProductIndex].addedDate,
+                    title: elEditFormTilte.value,
+                    price: +elEditFormPrice.value,
+                    model: elEditFormManufacture.value,
+                    benefits: elEditFormBenefits.value.split(",")
+                }
+                products.splice(currentProductIndex, 1, product)
+                productRender(products, elProductList)
+            }
+        }
+        elEditForm.addEventListener('submit', editProduct) 
+    };
+}
+
+if(elProductList) {
+    elProductList.addEventListener("click", onListClick)
 }
 
 elFilterForm.addEventListener('submit', searchProduct)
