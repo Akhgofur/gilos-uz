@@ -2,17 +2,17 @@ const selectElement = (element, parentElement = document) => parentElement.query
 const createDOM = (element) => document.createElement(element)
 const elProductList = selectElement(".product-list")
 const elProductTemplate = selectElement(".product-template").content
-let elProductName = selectElement("#product-title")
-let elProductPrice = selectElement("#price")
-let elProductManufacture = selectElement("#product-manufacturer")
-let elBenefits = selectElement("#benefits")
-let elAddProductForm = selectElement(".add-product-form")
-let elManufacturesFilter = selectElement("#manufacturer")
-let elProductSearch = selectElement("#search")
-let elPriceFrom = selectElement("#from")
-let elPriceTo = selectElement("#to")
-let elSortBy = selectElement("#sortby")
-let elFilterForm = selectElement("#search-form")
+const elProductName = selectElement("#product-title")
+const elProductPrice = selectElement("#price")
+const elProductManufacture = selectElement("#product-manufacturer")
+const elBenefits = selectElement("#benefits")
+const elAddProductForm = selectElement(".add-product-form")
+const elManufacturesFilter = selectElement("#manufacturer")
+const elProductSearch = selectElement("#search")
+const elPriceFrom = selectElement("#from")
+const elPriceTo = selectElement("#to")
+const elSortBy = selectElement("#sortby")
+const elFilterForm = selectElement("#search-form")
 const editProductModal = selectElement("#edit-product-modal")
 const elEditFormTilte = selectElement("#edit-product-title")
 const elEditFormPrice = selectElement("#edit-price")
@@ -88,7 +88,7 @@ function productRender(productsArr, element) {
     });
 }
 function searchProduct(evt) {
-    evt.preventDefault
+    evt.preventDefault()
     if(elSortBy.value === "1"){
         let regex = new RegExp(elProductSearch.value, 'gi')
         if (elManufacturesFilter.value === "0") {
@@ -100,7 +100,11 @@ function searchProduct(evt) {
         }
     }
     if(elSortBy.value === "2"){
-        const filteredByPrice = products.filter(item => elPriceFrom < item.price > elPriceTo || item.model === elManufacturesFilter.value)
+        const filteredByPrice = products.filter(item => {
+            let price = !elPriceTo.value ? Infinity : elPriceTo.value
+            return item.price >= elPriceFrom.value && item.price <= price
+        })
+        console.log(filteredByPrice);
         productRender(filteredByPrice, elProductList)
     }
 }
