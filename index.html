@@ -50,8 +50,9 @@
           <div class="mb-3">
             <label for="sortby" class="form-label">Sort by</label>
             <select class="form-select" id="sortby">
-              <option value="1">Name</option>
-              <option value="2">Price</option>
+              <option value="1">Name: A - Z</option>
+              <option value="2">Price: low to high</option>
+              <option value="3">Price: high to low</option>
             </select>
           </div>
 
@@ -85,7 +86,7 @@
                 </ul>
 
                 <div class="position-absolute top-0 end-0 d-flex">
-                  <button class="btn rounded-0 btn-secondary"><i class="fa-solid fa-pen"></i></button>
+                  <button id="edit" class="btn rounded-0 btn-secondary"><i class="fa-solid fa-pen"></i></button>
                   <button class="btn rounded-0 btn-danger"><i class="fa-solid fa-trash"></i></button>
                 </div>
               </div>
@@ -142,7 +143,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="editStudentModalLabel">Edit product</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" id="btn-close" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <form id="edit-form" class="add-product-form">

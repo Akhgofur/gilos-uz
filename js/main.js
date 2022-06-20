@@ -19,6 +19,11 @@ const elEditFormPrice = selectElement("#edit-price")
 const elEditFormManufacture = selectElement("#edit-product-manufacturer")
 const elEditFormBenefits = selectElement("#edit-benefits")
 const elEditForm = selectElement("#edit-form")
+const editModalCloseBtn = selectElement("#btn-close")
+const elEditBtn = selectElement("#edit")
+
+
+products = JSON.parse(localStorage.getItem('products'))
 
 const getTime = (time) => {
     const date = new Date(time)
@@ -44,7 +49,7 @@ manufacturesRender(manufacturers, elManufacturesFilter)
 
 function addProduct(evt){
     evt.preventDefault()
-
+    
     let product = {}
     product.title = elProductName.value
     product.price = elProductPrice.value
@@ -53,7 +58,7 @@ function addProduct(evt){
     product.img = "https://picsum.photos/300/200"
     product.addedDate = new Date().toISOString()
     product.id = 123 + products.length
-
+    
     products.push(product)
     productRender(products, elProductList)
     elAddProductForm.reset()
@@ -62,10 +67,10 @@ elAddProductForm.addEventListener("submit", addProduct)
 
 function productRender(productsArr, element) {
     element.innerHTML = null
-
+    
     productsArr.forEach(product => {
         const productTemplate = elProductTemplate.cloneNode(true)
-
+        
         selectElement(".card-img-top", productTemplate).src = product.img
         selectElement("#one-product", productTemplate).setAttribute("data-id", product.id)
         selectElement(".card-title", productTemplate).textContent = product.title
@@ -79,34 +84,53 @@ function productRender(productsArr, element) {
             let newBenefit = createDOM("li")
             newBenefit.textContent = benefit
             newBenefit.className = "badge bg-primary me-1 mb-1 product-benefit"
-
+            
             elProductBenefitsList.append(newBenefit)
         })
-
+        
         element.append(productTemplate)
         let elProductsCount = selectElement(".count").textContent = "count: " + products.length
+        localStorage.setItem('products', JSON.stringify(products))
+        products = JSON.parse(localStorage.getItem('products'))
     });
 }
 function searchProduct(evt) {
     evt.preventDefault()
-    if(elSortBy.value === "1"){
+    
+    const filteredProducts = products.filter((product) =>{
         let regex = new RegExp(elProductSearch.value, 'gi')
-        if (elManufacturesFilter.value === "0") {
-            const searchedArr = products.filter(item => item.title.match(regex))
-            productRender(searchedArr, elProductList)
-        }else{
-            const searchedArr = products.filter(item => item.title.match(regex) && item.model === elManufacturesFilter.value)
-            productRender(searchedArr, elProductList)
-        }
+        let productName = product.title.match(regex)
+        
+        let price = !elPriceTo.value ? Infinity : elPriceTo.value
+
+        let manufacture = elManufacturesFilter.value === "0" ? product.model : elManufacturesFilter.value === product.model
+
+        
+        
+        return product.price >= elPriceFrom.value && product.price <= price && productName && manufacture;
+    });
+    switch (elSortBy.value) {
+        case "1":
+            filteredProducts.sort((a, b) => {
+                if(a.title < b.title){return -1}
+                if(a.title > b.title) {return 1}
+                else {return 0}
+            })
+            break;
+
+        case "2":
+            filteredProducts.sort((a, b) => a.price - b.price)
+            break;
+        
+        case "3":
+            filteredProducts.sort((a, b) => b.price - a.price)
+            break;
+            
+            default:
+                elProductList.append('topilmadi')
     }
-    if(elSortBy.value === "2"){
-        const filteredByPrice = products.filter(item => {
-            let price = !elPriceTo.value ? Infinity : elPriceTo.value
-            return item.price >= elPriceFrom.value && item.price <= price
-        })
-        console.log(filteredByPrice);
-        productRender(filteredByPrice, elProductList)
-    }
+   
+    productRender(filteredProducts, elProductList)
 }
 const onListClick = (event) => {
     if(event.target.matches(".delete")){
@@ -138,15 +162,17 @@ const onListClick = (event) => {
                 products.splice(currentProductIndex, 1, product)
                 productRender(products, elProductList)
             }
+            elProductList.addEventListener("click", onListClick)
+            elEditForm.removeEventListener('submit', editProduct) 
         }
-        elEditForm.addEventListener('submit', editProduct) 
+    
+        elEditForm.addEventListener('submit', editProduct)
     };
+    elProductList.removeEventListener("click", onListClick)
 }
-
 if(elProductList) {
     elProductList.addEventListener("click", onListClick)
 }
 
 elFilterForm.addEventListener('submit', searchProduct)
-
 productRender(products, elProductList)
