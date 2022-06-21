@@ -22,7 +22,9 @@ const elEditForm = selectElement("#edit-form")
 const editModalCloseBtn = selectElement("#btn-close")
 const elEditBtn = selectElement("#edit")
 
-
+if(!localStorage.getItem('products')){
+    localStorage.setItem('products', JSON.stringify(products))
+}
 products = JSON.parse(localStorage.getItem('products'))
 
 const getTime = (time) => {
@@ -105,8 +107,6 @@ function searchProduct(evt) {
 
         let manufacture = elManufacturesFilter.value === "0" ? product.model : elManufacturesFilter.value === product.model
 
-        
-        
         return product.price >= elPriceFrom.value && product.price <= price && productName && manufacture;
     });
     switch (elSortBy.value) {
@@ -163,12 +163,13 @@ const onListClick = (event) => {
                 productRender(products, elProductList)
             }
             elProductList.addEventListener("click", onListClick)
+            // editModalCloseBtn.addEventListener("click", () => {})
             elEditForm.removeEventListener('submit', editProduct) 
         }
     
         elEditForm.addEventListener('submit', editProduct)
+        elProductList.removeEventListener("click", onListClick)
     };
-    elProductList.removeEventListener("click", onListClick)
 }
 if(elProductList) {
     elProductList.addEventListener("click", onListClick)
